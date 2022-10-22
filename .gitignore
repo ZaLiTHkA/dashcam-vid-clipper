@@ -1,0 +1,11 @@
+node_modules
+
+0-dashcam-source/*
+1-working/*
+2-rewrapped/*
+3-final/*
+
+*-BAK/*
+
+desktop.ini
+package-lock.json

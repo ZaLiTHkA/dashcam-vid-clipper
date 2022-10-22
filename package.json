@@ -1,0 +1,31 @@
+{
+  "name": "dashcam",
+  "version": "1.0.0",
+  "description": "* `0-dashcam-source` are files copied directly from my dashcam SD card\r * `1-rewrapped` are files rewrapped in a container with compression that Davinci Resolve can open\r   * _note: the script that automates this is currently on my personal laptop, it will be shifted here shortly._\r * `2-final` are files joined and/or trimmed as sharable edits",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon process-raw-files.ps1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nodemon": "^2.0.20"
+  },
+  "nodemonConfig": {
+    "restartable": "rs",
+    "delay": 500,
+    "ignore": [
+      ".git",
+      "node_modules/**/node_modules"
+    ],
+    "execMap": {
+      "ps1": "pwsh"
+    },
+    "watch": [
+      "*.ps1"
+    ],
+    "ext": "ps1"
+  }
+}
