@@ -19,7 +19,7 @@ try {
 
   # * this folder holds "video sets" as text files with CSV-style "rules" for cutting clips from source video files..
   $WorkingDir = resolve-path ".\1-working"
-  
+
   $DashSetFiles = @(get-childitem "$WorkingDir\*.set")
   $DashSetFileCount = $DashSetFiles.Count
   write-host "[env] WorkingDir: $WorkingDir, with $DashSetFileCount dashcam video sets"
@@ -39,7 +39,7 @@ foreach ($file in $DashSetFiles) {
   $DashSetName = split-path $file -LeafBase
   try {
     $SetWorkingDir = "$WorkingDir\$DashSetName"
-    
+
     $SetOutputDir = "$RewrappedDir\$DashSetName"
     if (-not (test-path "$SetOutputDir" -PathType Container)) {
       new-item "$SetOutputDir" -ItemType Container | out-null
