@@ -100,19 +100,16 @@ foreach ($file in $DashSetFiles) {
       write-warning $ConcatCommand
       invoke-expression $ConcatCommand
       pop-location
+
+      # ! obligatory EOF cleanup..
+      write-host ":: runtime clean up.. ::"
+
+      if ((test-path "$SetWorkingDir" -PathType Container)) {
+        # clear set process working directory
+        remove-item "$SetWorkingDir" -Force -Recurse
+      }
     }
   } catch {
-    write-error "but.. $_"
-  } finally {
-    $HasSetWorkingDir = (test-path "$SetWorkingDir" -PathType Container)
-    # write-host "HasSetWorkingDir: $HasSetWorkingDir"
-    $HasSetOutputFile = (test-path "$SetOutputFile" -PathType Leaf)
-    # write-host "HasSetOutputFile: $HasSetOutputFile"
-    $SetOutputFileValid = ((get-item "$SetOutputFile").length -gt 0kb)
-    # write-host "SetOutputFileValid: $SetOutputFileValid"
-    if (@($HasSetWorkingDir, $HasSetOutputFile, $SetOutputFileValid) -notcontains $False) {
-      write-host ":: cleaning up.. ::"
-      remove-item "$SetWorkingDir" -Force -Recurse
-    }
+    write-error "wait, what?? $_"
   }
 }
