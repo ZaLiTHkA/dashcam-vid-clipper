@@ -47,6 +47,9 @@ foreach ($file in $DashSetFiles) {
     if (-not (test-path "$SetOutputFile" -PathType Leaf)) {
       write-host ":: $DashSetName ::"
 
+      if (test-path "$SetWorkingDir" -PathType Container) {
+        remove-item "$SetWorkingDir" -Force -Recurse
+      }
       new-item "$SetWorkingDir" -ItemType Container | out-null
       push-location "$SetWorkingDir"
 
