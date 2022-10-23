@@ -72,10 +72,6 @@ foreach ($file in $DashSetFiles) {
           continue
         }
 
-        if (($ClipEnd -ne 0) -eq ($ClipEnd -lt $ClipStart)) {
-          write-error "clip end time '$ClipEnd' is before clip start time '$ClipStart'"
-          continue
-        }
 
         write-host ":: clipping parts from source files ::"
         $count += 1
