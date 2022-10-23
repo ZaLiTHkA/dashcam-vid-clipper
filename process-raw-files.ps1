@@ -3,10 +3,12 @@
 #
 # for the monent:
 # - ".set" files are basic text, containing one line per "source rule"
-# - each rule defined as "file_path,clip_start,clip_end"
-#   - 'file_path' is relative to $SourceDir
-#   - 'clip_start' is the number of seconds from the source file start
-#   - 'clip_end' is the number of seconds from the source file start
+# - each rule defined as "{file_path},{clip_start}-{clip_end},{extra_step}"
+#   - '{file_path}' is relative to $SourceDir
+#   - '{clip_start}-{clip_end}' is ONE FIELD with two video seeker positions of the clip to copy
+#     - * to incude the whole file, leave this blank or pass in '-'
+#     - * to cut from a set position _to the end_, set this as '{clip_start}-'
+#     - * similarly, to cut _from the start_ up to a set position, set as '-{clip_end}'
 
 try {
   # ! here we verify the current runtime environment..
@@ -71,14 +73,22 @@ foreach ($file in $DashSetFiles) {
           continue
         }
 
-        $ClipStart = 1 * $rule[1]
-        $ClipEnd = 1 * $rule[2]
+        $ClipRange = $rule[1]
+        $ClipRangeParts = @("$ClipRange" -split "-")
+        $ClipStart = 1 * $ClipRangeParts[0]
+        $ClipEnd = 1 * $ClipRangeParts[1]
 
         $count += 1
         $PartName = "part-$count.mov"
         $TrimCommand = "ffmpeg.exe -loglevel 16 -n -i `"$SourceDir\$ClipSourceFile`" -c copy"
-        if ($ClipStart -gt 0) { $TrimCommand += " -ss $ClipStart" }
-        if ($ClipEnd -gt 0) { $TrimCommand += " -to $ClipEnd" }
+
+        if ($ClipStart -gt 0) {
+          $TrimCommand += " -ss $ClipStart"
+        }
+        if ($ClipEnd -gt 0) {
+          $TrimCommand += " -to $ClipEnd"
+        }
+
         $TrimCommand += " '$PartName'"
         write-warning $TrimCommand
         invoke-expression $TrimCommand
