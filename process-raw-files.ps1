@@ -1,9 +1,12 @@
-# ? grab the folder path to the script file location..
-# $ProcessDir = split-path $MyInvocation.MyCommand.Path -Parent
-# write-host "ProcessDir: $ProcessDir"
-
-# ? ensure our script is executed in the correct working directory
-# push-location $ProcessDir
+# * process all "dashcam set rules" as read from `.\1-working\`
+# ! [WIP] behaviour subject to change without notice..
+#
+# for the monent:
+# - ".set" files are basic text, containing one line per "source rule"
+# - each rule defined as "file_path,clip_start,clip_end"
+#   - 'file_path' is relative to $SourceDir
+#   - 'clip_start' is the number of seconds from the source file start
+#   - 'clip_end' is the number of seconds from the source file start
 
 try {
   # ! here we verify the current runtime environment..
@@ -29,13 +32,6 @@ try {
   # write-error $_.ScriptStackTrace
   exit 0
 }
-
-# ! [WIP] subject to change..
-# * ".set" files are basic text, containing one line per "source rule"
-# * each rule defined as "file_path,clip_start,clip_end"
-# * - 'file_path' is relative to $SourceDir
-# * - 'clip_start' is the number of seconds from the source file start
-# * - 'clip_end' is the number of seconds from the source file start
 
 $FfmpegCommand = "ffmpeg.exe -loglevel 16 -n"
 
@@ -115,6 +111,4 @@ foreach ($file in $DashSetFiles) {
       remove-item "$SetWorkingDir" -Force -Recurse
     }
   }
-
-  # write-host " "
 }
