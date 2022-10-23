@@ -56,24 +56,21 @@ foreach ($file in $DashSetFiles) {
       }
 
       $count = 0
+      write-host ":: checking set rules.. ::"
       foreach ($entry in @(get-content $file)) {
-        write-host ":: checking set rules.. ::"
         $rule = @($entry.Split(","))
 
         $ClipSourceFile = $rule[0]
-        $ClipStart = 1 * $rule[1]
-        $ClipEnd = 1 * $rule[2]
-        $ClipStartString = ($ClipStart -ne 0) ? "${ClipStart}s" : "start"
-        $ClipEndString = ($ClipEnd -ne 0) ? "${ClipEnd}s" : "end"
+        write-host "proccessing file '$ClipSourceFile'.."
 
-        write-host "testing file '$SourceDir\$ClipSourceFile'.."
         if (-not (test-path "$SourceDir\$ClipSourceFile" -PathType Leaf)) {
-          write-error "missing source file: $SourceDir\$ClipSourceFile"
+          write-error "source file missing: $SourceDir\$ClipSourceFile"
           continue
         }
 
+        $ClipStart = 1 * $rule[1]
+        $ClipEnd = 1 * $rule[2]
 
-        write-host ":: clipping parts from source files ::"
         $count += 1
         $PartName = "part-$count.mov"
         $TrimCommand = "ffmpeg.exe -loglevel 16 -n -i `"$SourceDir\$ClipSourceFile`" -c copy"
