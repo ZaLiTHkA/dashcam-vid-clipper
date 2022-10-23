@@ -11,7 +11,7 @@ try {
   write-host ":: checking environment ::"
 
   # * this folder holds the incoming video files, as copied directly from the SD card..
-  $SourceDir = resolve-path ".\0-dashcam-source"
+  $SourceDir = resolve-path ".\0-sources"
   write-host "[env] SourceDir: $SourceDir"
 
   # * this folder holds "video sets" as text files with CSV-style "rules" for cutting clips from source video files..
