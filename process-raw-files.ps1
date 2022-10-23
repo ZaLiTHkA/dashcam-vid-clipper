@@ -33,8 +33,6 @@ try {
   exit 0
 }
 
-$FfmpegCommand = "ffmpeg.exe -loglevel 16 -n"
-
 foreach ($file in $DashSetFiles) {
   $DashSetName = split-path $file -LeafBase
   try {
@@ -82,7 +80,7 @@ foreach ($file in $DashSetFiles) {
         write-host ":: clipping parts from source files ::"
         $count += 1
         $PartName = "part-$count.mov"
-        $TrimCommand = "$FfmpegCommand -i `"$SourceDir\$ClipSourceFile`" -c copy"
+        $TrimCommand = "ffmpeg.exe -loglevel 16 -n -i `"$SourceDir\$ClipSourceFile`" -c copy"
         if ($ClipStart -gt 0) { $TrimCommand += " -ss $ClipStart" }
         if ($ClipEnd -gt 0) { $TrimCommand += " -to $ClipEnd" }
         $TrimCommand += " '$PartName'"
@@ -92,7 +90,7 @@ foreach ($file in $DashSetFiles) {
       }
 
       write-host ":: concatenating clip parts.. ::"
-      $ConcatCommand = "$FfmpegCommand -f concat -i `"$SetLocalPartsPath`" -c copy `"$SetOutputFile`""
+      $ConcatCommand = "ffmpeg.exe -loglevel 16 -n -f concat -i `"$SetLocalPartsPath`" -c copy `"$SetOutputFile`""
       write-warning $ConcatCommand
       invoke-expression $ConcatCommand
       pop-location
