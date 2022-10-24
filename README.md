@@ -35,12 +35,15 @@ the script is designed to be executed from the root of your chosen dashcam proce
 
 #### Creating Video Set Rule Files
 
-each output project is based on a single `.set` file, which is used in the following ways:
+each output project is based on a single `.set` file, which is a `csv`-style document, used in the following ways:
 
 * the `.set` file name is used without as the "output project" folder name
-* each line in the `.set` file holds a rule that will result in a separate video clip being extracted
-* each video clip rule defines the source file, and an optional "start" and "end" position to clip
+* each line in the `.set` file holds a rule that will result in a separate video clip being extracted:
+  * the first field defines the source file, with a path relative to `0-sources`
+  * the second field is an optional "start" and "end" position to clip from the source
 * all extracted video clips will be concatenated into a single file, matching the defined clip order
+
+> **note**: there is currently support for a third optional rule value field, but the process linked to this is still in the "design" stages at the moment.
 
 video clip duration parsing is done with the second rule field, interpretted as `{clip_start}-{clip_end}`, where:
 
