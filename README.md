@@ -97,7 +97,3 @@ currently, the best way to run this tool is:
 * open a PowerShell terminal at the root of your dashcam processing folder.
 * execute the `rewrapper.ps1` script file from wherever it is stored.
   * _such as `C:\Users\ZaLiTHkA\workspace\dashcam-rewrapper\rewrapper.ps1`._
-
-### Some Background
-
-this started out
