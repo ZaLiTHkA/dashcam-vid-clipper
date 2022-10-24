@@ -5,7 +5,7 @@ node_modules
 2-rewrapped/*
 3-final/*
 
-*-BAK/*
+X-BACKUP/*
 
 desktop.ini
 package-lock.json

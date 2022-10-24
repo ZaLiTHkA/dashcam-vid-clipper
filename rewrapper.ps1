@@ -9,78 +9,86 @@
 #     - * to incude the whole file, leave this blank or pass in '-'
 #     - * to cut from a set position _to the end_, set this as '{clip_start}-'
 #     - * similarly, to cut _from the start_ up to a set position, set as '-{clip_end}'
+#   - '{extra_step}' [WIP] think of this as a "post-process hook", but currently it serves one solitary purpose:
+#     - to allow 'REPAIR' to be passed in, which moves the source file to a special folder.. :/
+
+$IS_DRY_RUN = (@(($args -contains "--exec"),($args -contains "-x") -notcontains $True))
+if ($IS_DRY_RUN) {
+  write-warning "going --dry-run style.. no changes will be made."
+}
 
 try {
   # ! here we verify the current runtime environment..
   # basically, if nothing kills the block, then we're good to go..
-  write-host ":: checking environment ::"
+
+  $BackupDir = resolve-path ".\X-BACKUP" -ErrorAction Stop
 
   # * this folder holds the incoming video files, as copied directly from the SD card..
-  $SourceDir = resolve-path ".\0-sources"
-  write-host "[env] SourceDir: $SourceDir"
+  $SourceDir = resolve-path ".\0-sources" -ErrorAction Stop
+  $SourceNeedsRepairDir = "$BackupDir\needs-repair"
 
   # * this folder holds "video sets" as text files with CSV-style "rules" for cutting clips from source video files..
-  $WorkingDir = resolve-path ".\1-working"
-
-  $DashSetFiles = @(get-childitem "$WorkingDir\*.set")
-  $DashSetFileCount = $DashSetFiles.Count
-  write-host "[env] WorkingDir: $WorkingDir, with $DashSetFileCount dashcam video sets"
+  $WorkingDir = resolve-path ".\1-working" -ErrorAction Stop
+  $SetFilesDoneDir = "$BackupDir\set-files"
 
   # * this folder holds the out of "rewrapping" the clips extracted from the source video files..
-  $RewrappedDir = resolve-path ".\2-rewrapped"
-  write-host "[env] RewrappedDir: $RewrappedDir"
+  $RewrappedDir = resolve-path ".\2-rewrapped" -ErrorAction Stop
 } catch {
   write-error "hmm.. $_"
   # write-error $_.ScriptStackTrace
   exit 0
 }
 
-foreach ($file in $DashSetFiles) {
-  $DashSetName = split-path $file -LeafBase
+foreach ($SetFile in @(get-childitem "$WorkingDir\*.set")) {
+  # ! NOTE: here the try/catch is _inside_ the loop, because each set should have a chance at being used..
+  # ..regardless, ultimately there will be much refactoring.
   try {
-    $SetWorkingDir = "$WorkingDir\$DashSetName"
+    # write-warning $SetFile.Name
+    # write-warning $SetFile.BaseName
+    # write-warning $SetFile.Extension
+    # write-warning $SetFile.Directory
 
+    $DashSetName = $SetFile.BaseName
+    $SetFileName = $SetFile.Name
+    $SetWorkingDir = "$WorkingDir\$DashSetName"
     $SetOutputDir = "$RewrappedDir\$DashSetName"
+    $SetOutputFile = "$SetOutputDir\concatenated.mov"
+    $SetLocalPartsPath = "$SetWorkingDir\parts.local"
+
     if (-not (test-path "$SetOutputDir" -PathType Container)) {
       new-item "$SetOutputDir" -ItemType Container | out-null
     }
 
-    $SetOutputFile = "$SetOutputDir\concatenated.mov"
     if (-not (test-path "$SetOutputFile" -PathType Leaf)) {
-      write-host ":: $DashSetName ::"
-
       if (test-path "$SetWorkingDir" -PathType Container) {
         remove-item "$SetWorkingDir" -Force -Recurse
       }
       new-item "$SetWorkingDir" -ItemType Container | out-null
       push-location "$SetWorkingDir"
 
-      $SetLocalPartsPath = "$SetWorkingDir\parts.local"
       if (test-path "$SetLocalPartsPath" -PathType Leaf) {
         remove-item "$SetLocalPartsPath" -Force
       }
 
-      $count = 0
-      write-host ":: checking set rules.. ::"
-      foreach ($entry in @(get-content $file)) {
-        $rule = @($entry.Split(","))
+      write-host ":: processing rules for '$DashSetName'.. ::"
 
-        $ClipSourceFile = $rule[0]
-        write-host "proccessing file '$ClipSourceFile'.."
+      $ClipCounter = 0
+      foreach ($SetRule in @(get-content $SetFile)) {
+        $SetRuleParts = @($SetRule.Split(","))
 
-        if (-not (test-path "$SourceDir\$ClipSourceFile" -PathType Leaf)) {
-          write-error "source file missing: $SourceDir\$ClipSourceFile"
+        $ClipPath = $SetRuleParts[0]
+        if (-not (test-path "$SourceDir\$ClipPath" -PathType Leaf)) {
+          write-error "source file missing: $SourceDir\$ClipPath"
           continue
         }
+        $ClipCounter += 1
 
-        $ClipRange = $rule[1]
-        $ClipRangeParts = @("$ClipRange" -split "-")
+        $ClipRange = $SetRuleParts[1]
+        $ClipRangeParts = @($ClipRange.Split("-"))
         $ClipStart = 1 * $ClipRangeParts[0]
         $ClipEnd = 1 * $ClipRangeParts[1]
 
-        $count += 1
-        $PartName = "part-$count.mov"
-        $TrimCommand = "ffmpeg.exe -loglevel 16 -n -i `"$SourceDir\$ClipSourceFile`" -c copy"
+        $TrimCommand = "ffmpeg.exe -loglevel 16 -n -i `"$SourceDir\$ClipPath`" -c copy"
 
         if ($ClipStart -gt 0) {
           $TrimCommand += " -ss $ClipStart"
@@ -89,20 +97,47 @@ foreach ($file in $DashSetFiles) {
           $TrimCommand += " -to $ClipEnd"
         }
 
+        $PartName = "part-$ClipCounter.mov"
         $TrimCommand += " '$PartName'"
-        write-warning $TrimCommand
-        invoke-expression $TrimCommand
         write-output "file $PartName" >> "$SetLocalPartsPath"
+
+        if (-not $IS_DRY_RUN) {
+          invoke-expression $TrimCommand
+        } else {
+          write-warning "[--dry-run] $TrimCommand"
+        }
+
+        # ! this is simply going to slot in after the current process, for now.. but this must be integrated more carefully before being commited..
+        $SourceClipExtraStep = $SetRuleParts[2]
+        if ("$SourceClipExtraStep" -eq "REPAIR") {
+          if (-not $IS_DRY_RUN) {
+            write-warning "moving source clip to 'needs repair' folder.."
+            move-item -Path "$SourceDir\$ClipPath" -Destination "$SourceNeedsRepairDir\$ClipPath"
+          } else {
+            write-warning "[--dry-run] NOT moving source clip to 'needs repair' folder.."
+          }
+        }
       }
 
       write-host ":: concatenating clip parts.. ::"
       $ConcatCommand = "ffmpeg.exe -loglevel 16 -n -f concat -i `"$SetLocalPartsPath`" -c copy `"$SetOutputFile`""
-      write-warning $ConcatCommand
-      invoke-expression $ConcatCommand
+
+      if (-not $IS_DRY_RUN) {
+        invoke-expression $ConcatCommand
+      } else {
+        write-warning "[--dry-run] $ConcatCommand"
+      }
+
+      # ! we can leave the set working directory now..
       pop-location
 
       # ! obligatory EOF cleanup..
       write-host ":: runtime clean up.. ::"
+
+      if ((test-path "$SetOutputFile" -PathType Leaf)) {
+        # move the current set rules file..
+        move-item -Path "$WorkingDir\$SetFileName" -Destination "$SetFilesDoneDir\$SetFileName"
+      }
 
       if ((test-path "$SetWorkingDir" -PathType Container)) {
         # clear set process working directory
