@@ -48,8 +48,8 @@ video clip duration parsing is done with the second rule field, interpretted as 
 * the `-` is a divider, allowing the script to split the string into two values.
 * if either/both values are omitted, the clip will default to the "start" or "end" of the clip source video, as appropriate.
   * no clip duration rule, or a blank string, or simply `-`: will copy the entire file
-  * only a "start" value like `10-`: will include from `10` seconds to the `END` of the source file
-  * only an "end" value like `-17`: will include from the `START` to `17` seconds into the source file
+  * only a "start" value like `10-`: will include from `10s` to the `END` of the source file
+  * only an "end" value like `-17`: will include from the `START` to `17s` into the source file
 
 ##### Example
 
@@ -72,7 +72,7 @@ LOCA0002.avi,34-49
 
 this will perform the following steps:
 
-* extract from `34` seconds up to `49` seconds from `0-sources\LOCA0002.avi`, saving this to `1-working\2022-10-30 - OMG check this idiot\part-1.mov`
+* extract from `34s` up to `49s` from `0-sources\LOCA0002.avi`, saving this to `1-working\2022-10-30 - OMG check this idiot\part-1.mov`
 * concatenate `[part-1.mov]` into `2-rewrapped\2022-10-30 - OMG check this idiot\concatenated.mov`
 
 whereas our second `2022-10-30 - Crazy drive home.set` file should contain:
@@ -83,9 +83,9 @@ LOCA0002.avi
 MOVA0003.avi,-96
 ```
 
-* extract from `15` seconds up to `END` seconds from `0-sources\MOVA0001.avi`, saving this to `1-working\2022-10-30 - Crazy drive home\part-1.mov`
-* extract from `15` seconds up to `END` seconds from `0-sources\LOCA0002.avi`, saving this to `1-working\2022-10-30 - Crazy drive home\part-2.mov`
-* extract from `15` seconds up to `END` seconds from `0-sources\MOVA0003.avi`, saving this to `1-working\2022-10-30 - Crazy drive home\part-3.mov`
+* extract from `15s` up to `END` from `0-sources\MOVA0001.avi`, saving this to `1-working\2022-10-30 - Crazy drive home\part-1.mov`
+* extract from `START` up to `END` from `0-sources\LOCA0002.avi`, saving this to `1-working\2022-10-30 - Crazy drive home\part-2.mov`
+* extract from `START` up to `96s` from `0-sources\MOVA0003.avi`, saving this to `1-working\2022-10-30 - Crazy drive home\part-3.mov`
 * concatenate `[part-1.mov,part-2.mov,part-3.mov]` into `2-rewrapped\2022-10-30 - Crazy drive home\concatenated.mov`
 
 #### Processing Video Set Rule Files
