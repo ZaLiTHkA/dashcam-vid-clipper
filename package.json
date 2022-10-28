@@ -1,8 +1,8 @@
 {
-  "name": "dashcam",
+  "name": "dashcam-rewrapper",
   "version": "1.0.0",
-  "description": "* `0-dashcam-source` are files copied directly from my dashcam SD card\r * `1-rewrapped` are files rewrapped in a container with compression that Davinci Resolve can open\r   * _note: the script that automates this is currently on my personal laptop, it will be shifted here shortly._\r * `2-final` are files joined and/or trimmed as sharable edits",
-  "main": "index.js",
+  "author": "Andre Greeff <little.grief@gmail.com>",
+  "license": "ISC",
   "scripts": {
     "once": "pwsh rewrapper.ps1",
     "once:x": "pwsh rewrapper.ps1 -x",
@@ -11,9 +11,6 @@
     "dev:x": "nodemon rewrapper.ps1 -x",
     "dev:exec": "nodemon rewrapper.ps1 --exec"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "nodemon": "^2.0.20"
   },
