@@ -4,12 +4,12 @@
   "author": "Andre Greeff <little.grief@gmail.com>",
   "license": "ISC",
   "scripts": {
-    "once": "pwsh rewrapper.ps1",
-    "once:x": "pwsh rewrapper.ps1 -x",
-    "once:exec": "pwsh rewrapper.ps1 --exec",
-    "dev": "nodemon rewrapper.ps1",
-    "dev:x": "nodemon rewrapper.ps1 -x",
-    "dev:exec": "nodemon rewrapper.ps1 --exec"
+    "once": "pwsh bin/rewrapper.ps1",
+    "once:x": "pwsh bin/rewrapper.ps1 -x",
+    "once:exec": "pwsh bin/rewrapper.ps1 --exec",
+    "dev": "nodemon bin/rewrapper.ps1",
+    "dev:x": "nodemon bin/rewrapper.ps1 -x",
+    "dev:exec": "nodemon bin/rewrapper.ps1 --exec"
   },
   "dependencies": {
     "nodemon": "^2.0.20"
@@ -25,7 +25,7 @@
       "ps1": "pwsh"
     },
     "watch": [
-      "*.ps1"
+      "bin/*.ps1"
     ],
     "ext": "ps1"
   }
