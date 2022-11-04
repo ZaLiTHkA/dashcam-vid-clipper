@@ -5,12 +5,9 @@
   "license": "ISC",
   "packageManager": "^yarn@1.22.19",
   "scripts": {
-    "once": "pwsh bin/rewrapper.ps1",
-    "once:x": "pwsh bin/rewrapper.ps1 -x",
-    "once:exec": "pwsh bin/rewrapper.ps1 --exec",
-    "dev": "nodemon bin/rewrapper.ps1",
-    "dev:x": "nodemon bin/rewrapper.ps1 -x",
-    "dev:exec": "nodemon bin/rewrapper.ps1 --exec"
+    "clip": "pwsh bin/vid-clip-concat.ps1",
+    "clip:debug": "pwsh bin/vid-clip-concat.ps1 -Debug",
+    "clip:dev": "nodemon bin/vid-clip-concat.ps1 -- -Verbose -Debug"
   },
   "dependencies": {
     "nodemon": "^2.0.20"
