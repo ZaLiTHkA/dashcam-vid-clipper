@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "author": "Andre Greeff <little.grief@gmail.com>",
   "license": "ISC",
+  "packageManager": "^yarn@1.22.19",
   "scripts": {
     "once": "pwsh bin/rewrapper.ps1",
     "once:x": "pwsh bin/rewrapper.ps1 -x",
