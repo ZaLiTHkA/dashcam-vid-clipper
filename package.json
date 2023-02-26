@@ -5,26 +5,6 @@
   "license": "ISC",
   "packageManager": "^yarn@1.22.19",
   "scripts": {
-    "clip": "pwsh bin/vid-clip-concat.ps1",
-    "clip:debug": "pwsh bin/vid-clip-concat.ps1 -Debug",
-    "clip:dev": "nodemon bin/vid-clip-concat.ps1 -- -Verbose -Debug"
-  },
-  "dependencies": {
-    "nodemon": "^2.0.20"
-  },
-  "nodemonConfig": {
-    "restartable": "rs",
-    "delay": 500,
-    "ignore": [
-      ".git",
-      "node_modules/**/node_modules"
-    ],
-    "execMap": {
-      "ps1": "pwsh"
-    },
-    "watch": [
-      "bin/*.ps1"
-    ],
-    "ext": "ps1"
+    "clip": "pwsh bin/vid-clip-concat.ps1 -Verbose -Debug"
   }
 }
