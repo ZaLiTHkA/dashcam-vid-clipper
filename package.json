@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "author": "Andre Greeff <little.grief@gmail.com>",
   "license": "ISC",
-  "packageManager": "^yarn@1.22.19",
   "scripts": {
     "clip": "pwsh bin/vid-clip-concat.ps1 -Verbose -Debug"
   }
