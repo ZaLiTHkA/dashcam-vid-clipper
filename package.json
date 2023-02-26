@@ -1,33 +1,9 @@
 {
-  "name": "media-tools-cli",
+  "name": "dashcam-vid-clipper",
   "version": "1.0.0",
   "author": "Andre Greeff <little.grief@gmail.com>",
   "license": "ISC",
-  "packageManager": "^yarn@1.22.19",
   "scripts": {
-    "once": "pwsh bin/rewrapper.ps1",
-    "once:x": "pwsh bin/rewrapper.ps1 -x",
-    "once:exec": "pwsh bin/rewrapper.ps1 --exec",
-    "dev": "nodemon bin/rewrapper.ps1",
-    "dev:x": "nodemon bin/rewrapper.ps1 -x",
-    "dev:exec": "nodemon bin/rewrapper.ps1 --exec"
-  },
-  "dependencies": {
-    "nodemon": "^2.0.20"
-  },
-  "nodemonConfig": {
-    "restartable": "rs",
-    "delay": 500,
-    "ignore": [
-      ".git",
-      "node_modules/**/node_modules"
-    ],
-    "execMap": {
-      "ps1": "pwsh"
-    },
-    "watch": [
-      "bin/*.ps1"
-    ],
-    "ext": "ps1"
+    "clip": "pwsh bin/vid-clip-concat.ps1 -Verbose -Debug"
   }
 }
