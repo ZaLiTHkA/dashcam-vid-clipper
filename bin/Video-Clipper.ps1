@@ -1,34 +1,39 @@
 param(
-  # ! this is the "video clip rules list" project file to work with.. so, yes, it's mandatory.
-  [Parameter(Mandatory)] [Alias("p")] [string] $Project,
+  # this is the "video clip rules list" project file to work with.. so, yes, it's mandatory.
+  [Parameter(ValueFromRemainingArguments, Position = 0)] [Alias("p")] [string] $Project,
 
-  # ? (optional) a resolvable path to use as the "working directory" for working with the extracted video clip(s).
-  # if not set, this defaults to a folder named after your project, within your host OS "TEMP" folder.
+  # a resolvable path to use as the "working directory" for working with the extracted video clip(s).
   [Parameter()] [Alias("t")] [string] $Temp = "$Env:TEMP",
 
-  # ? (optional) a resolvable path to use as the "root path" for any relative video clip rule file paths.
-  # if not set, this script will use the current process working directory by default.
-  # this has no effect on absolute video clip rule file paths.
-  [Parameter()] [Alias("s")] [string] $Source = ".",
+  # a resolvable path to use as the "root path" for any relative video clip rule file paths.
+  [Parameter()] [Alias("s")] [string] $Source = ".\sources",
 
-  # ? (optional) a resolvable path to use as the "output folder" for the final concatenated video file(s).
-  # if not set, this script will use the current working folder by default.
-  [Parameter()] [Alias("o")] [string] $Output = "."
+  # a resolvable path to use as the "output folder" for the final concatenated video file(s).
+  [Parameter()] [Alias("o")] [string] $Output = ".\outputs"
 )
 
-# ! check runtime requirements..
+# ! first set up our environment..
 try {
   $FfmpegVersion = (($(Invoke-Expression "ffmpeg -version" -ErrorAction Stop) -split "\n")[0] -split "\s")[2]
   Write-Debug "[FfmpegVersion] $FfmpegVersion"
 
   $ProjectPath = Resolve-Path "$Project" -ErrorAction Stop
   Write-Debug "[ProjectPath] resolved as: $ProjectPath"
+  $ProjectName = Split-Path $ProjectPath -LeafBase
+
+  $WorkingDir = Resolve-Path "$ProjectPath" | Split-Path
+  Write-Debug "WorkingDir: $WorkingDir"
 
   $TempPath = Resolve-Path "$Temp" -ErrorAction Stop
-  Write-Debug "[TempPath] ($(($PSBoundParameters.ContainsKey("Temp")) ? "custom!!" : "default..")) resolved as: $TempPath"
+  $TempDir = "$TempPath\Video-Clipper__$(Get-Date -Format "yyyy-MM-dd-HH-mm-ss")__$($ProjectName)"
+  if (-not (Test-Path "$TempDir" -PathType Container)) {
+    [void](New-Item -Path "$TempDir" -ItemType Directory)
+  }
+  $ProjectPartsList = "$TempDir\project-clip.parts"
+  Write-Debug "[TempDir] ($(($PSBoundParameters.ContainsKey("Temp")) ? "custom!!" : "default..")) resolved as: $TempDir"
 
-  $VideosPath = Resolve-Path "$Source" -ErrorAction Stop
-  Write-Debug "[VideosPath] ($(($PSBoundParameters.ContainsKey("Source")) ? "custom!!" : "default..")) resolved as: $VideosPath"
+  $SourcePath = Resolve-Path "$Source" -ErrorAction Stop
+  Write-Debug "[SourcePath] ($(($PSBoundParameters.ContainsKey("Source")) ? "custom!!" : "default..")) resolved as: $SourcePath"
 
   $OutputPath = Resolve-Path "$Output" -ErrorAction Stop
   Write-Debug "[OutputPath] ($(($PSBoundParameters.ContainsKey("Output")) ? "custom!!" : "default..")) resolved as: $OutputPath"
@@ -39,63 +44,66 @@ catch {
   exit 1
 }
 
+# ! process project..
 try {
-  $ProjectName = Split-Path $ProjectPath -LeafBase
-  Write-Host ":: processing video project `"$ProjectName`".. ::"
+  Write-Host ":: processing video project '$ProjectName'.. ::"
 
   $ProjectClips = @(Get-Content "$ProjectPath")
   Write-Verbose "project depends on $($ProjectClips.Count) source clips"
   Write-Debug "ProjectClips: $ProjectClips"
 
-  $ProjectWorkingDir = "$TempPath\vid-clip-concat-$(Get-Date -Format "yyyy-MM-dd-HH-mm-ss")"
-  $ProjectPartsFile = "$ProjectWorkingDir\project-clip.parts"
+  if ($ProjectClips.Count -ne 0) {
+    $ProjectClipCounter = 0
+    foreach ($Clip in $ProjectClips) {
+      $ProjectClipCounter += 1
 
-  if (-not (Test-Path "$ProjectWorkingDir" -PathType Container)) {
-    [void](New-Item -Path "$ProjectWorkingDir" -ItemType Directory)
+      $ClipParts = @($Clip.Split(","))
+      $ClipSource = Resolve-Path $ClipParts[0] -ErrorAction SilentlyContinue
+      if (-not $ClipSource) {
+        Write-Debug "[ClipSource] not absolute path.. trying relative to provided source."
+        $ClipSource = Resolve-Path "$SourcePath`\$($ClipParts[0])" -ErrorAction Stop
+      }
+      Write-Debug "[ClipSource] resolved as: $ClipSource"
+      $ClipRange = $ClipParts[1]
+
+      if (-not ($ClipRange)) {
+        $ClipRange = "-"
+      }
+
+      $ClipRangeParts = @($ClipRange.Split("-"))
+      $ClipStart = 1 * $ClipRangeParts[0]
+      $ClipEnd = 1 * $ClipRangeParts[1]
+
+      $TrimCommand = "ffmpeg.exe -loglevel 16 -n -i '$ClipSource' -c copy"
+      if ($ClipStart -gt 0) {
+        $TrimCommand = "$TrimCommand -ss $ClipStart"
+      }
+      if ($ClipEnd -gt 0) {
+        $TrimCommand = "$TrimCommand -to $ClipEnd"
+      }
+
+      $PartName = "$TempDir\part-$ProjectClipCounter.mov"
+      Write-Output "file '$PartName'" >> "$ProjectPartsList"
+      $TrimCommand = "$TrimCommand '$PartName'"
+
+      Write-Verbose "generated TrimCommand: $TrimCommand"
+      Invoke-Expression $TrimCommand
+    }
+  }
+  else {
+    Write-Host "no source clips found in project.."
   }
 
-  Push-Location "$ProjectWorkingDir"
+  if (Test-Path "$ProjectPartsList" -PathType Leaf) {
+    Write-Host ":: concatenating clip parts.. ::"
+    $ConcatCommand = "ffmpeg.exe -loglevel 16 -n -f concat -safe 0 -i '$ProjectPartsList' -c copy '$OutputPath\$ProjectName.mov'"
 
-  $ProjectClipCounter = 0
-  foreach ($Clip in $ProjectClips) {
-    $ClipParts = @($Clip.Split(","))
-
-    $ClipSource = $ClipParts[0]
-    $ClipRange = $ClipParts[1]
-
-    if (-not (Test-Path "$VideosPath\$ClipSource" -PathType Leaf)) {
-      write-error "source file missing: $VideosPath\$ClipSource"
-      continue
-    }
-    $ProjectClipCounter += 1
-
-    $ClipRangeParts = @($ClipRange.Split("-"))
-    $ClipStart = 1 * $ClipRangeParts[0]
-    $ClipEnd = 1 * $ClipRangeParts[1]
-
-    $TrimCommand = "ffmpeg.exe -loglevel 16 -n -i `"$VideosPath\$ClipSource`" -c copy"
-    if ($ClipStart -gt 0) {
-      $TrimCommand = "$TrimCommand -ss $ClipStart"
-    }
-    if ($ClipEnd -gt 0) {
-      $TrimCommand = "$TrimCommand -to $ClipEnd"
-    }
-
-    $PartName = "part-$ProjectClipCounter.mov"
-    $TrimCommand = "$TrimCommand '$PartName'"
-    Write-Output "file $PartName" >> "$ProjectPartsFile"
-
-    Write-Debug "generated TrimCommand: $TrimCommand"
-    Invoke-Expression $TrimCommand
+    Write-Verbose "generated ConcatCommand: $ConcatCommand"
+    Invoke-Expression $ConcatCommand
   }
-
-  Write-Host ":: concatenating clip parts.. ::"
-  $ConcatCommand = "ffmpeg.exe -loglevel 16 -n -f concat -i `"$ProjectPartsFile`" -c copy `"$OutputPath\$ProjectName.mov`""
-
-  Write-Debug "generated ConcatCommand: $ConcatCommand"
-  Invoke-Expression $ConcatCommand
-
-  Pop-Location
+  else {
+    Write-Verbose "but there was nothing to concatenate.."
+  }
 }
 catch {
   Write-Error "hmmm.. $_"

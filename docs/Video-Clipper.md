@@ -52,6 +52,10 @@ various aspects of this script's runtime can be tweaked with CLI arguments. to s
 script CLI arguments are as follows:
 
 * `-p, --Project` (required, no default): a resolvable path to a `csv` file with the aforementioned rules
-* `-s, -Source` (default `.`): resolvable folder path in which to look for source video clip(s)
-* `-o, -Output` (default `.`): resolvable folder path in which to write the final output project video clip
-* `-t, -TEMP` (default `%TEMP%`): resolvable folder path in which to create runtime working directories - these are not removed automatically
+* `-s, -Source` (default `.\sources`): resolvable folder path in which to look for source video clip(s)
+* `-o, -Output` (default `.\outputs`): resolvable folder path in which to write the final output project video clip
+* `-t, -Temp` (default `%TEMP%`): resolvable folder path in which to create runtime working directories - these are not removed automatically
+
+often I prepare multiple project files first, then process them all at once. for example:
+
+`foreach ($f in (ls -Filter .\projects\*.csv)) { Video-Clipper.ps1 $f }`
