@@ -1,6 +1,8 @@
-## Dashcam Rewrapper
+## Video Clipper
 
-this utility is a self-contained PowerShell script, designed to assist with basic dashcam video clip processing.
+this came into being to assist me with basic dashcam video clip processing.. using a CSV-style project configuration file, this script will cut specified time spans out of any number of source clips, and concatenate them all into one output file.
+
+but, that's pretty much it. :)
 
 ### Standard Usage
 

@@ -13,3 +13,4 @@ take note of the following key files and folders:
 
 ..and yes, I am indeed starting out very small here:
 
+* Video Clipper : [[script](bin/Video-Clipper.ps1)] [[docs](docs/Video-Clipper.md)]
