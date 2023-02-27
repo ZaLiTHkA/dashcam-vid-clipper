@@ -1,22 +1,15 @@
 ## Media Tools - CLI Collection
 
-a collection of specific use-case PowerShell scripts, unleashed upon the world for anyone else to tinker with..
-
-### Scripts Index
-
-**take note**: these are not ordered in any special way, other than just the order in which they were added..
-
-* [ ] [`vid-clip-concat.ps1`](docs/vid-clip-concat.md) - functional, needs refactoring
+my humble collection of specific use-case PowerShell scripts, unleashed upon the world for anyone to tinker with..
 
 ### Project Layout
 
-* `bin` contains the actual script files
-* `docs` contains documentation for the scripts files
-* `test` contains supporting data for testing the script files
+take note of the following key files and folders:
 
-### Contributing
+* `bin/` contains the actual script files
+* `docs/` contains documentation for the scripts files
 
-while this workspace is intended for PowerShell scripts, it is initialised as a Node project.. this is simply to allow
-me to use `nodemon` to execute the scripts with live-reload, which is particular useful for the development phase.
+### Scripts Index
 
-> more details to come on this front later..
+..and yes, I am indeed starting out very small here:
+
